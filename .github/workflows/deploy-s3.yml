@@ -1,0 +1,39 @@
+name: utc app ci/cd
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  python_version: 3.11
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-python@v4
+              with:
+                python-version: ${{env.python_version}}
+
+            - name: unit test
+              run: pytest
+
+            - name: Build image
+              run: docker build -t cheick-b/my-portfolio3
+
+            - name: configure aws credentials
+              uses: aws-actions/configure-aws-credentials@v2
+              with: 
+                role-to-assume: arn:aws:iam::366019841221:role/OIDC-ROLE
+                aws-region: us-east-1
+
+            - name: Upload to s3
+              uses: aws-actions/s3-sync@v1
+    
+              with:
+                bucket: my-portfolio3
+                region: us-east-1
+                source-dir: .
+                dest-dir: utc-app/

@@ -1,4 +1,4 @@
-ame: utc app ci/cd
+name: utc app ci/cd
 
 on:
   push:
