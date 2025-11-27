@@ -8,32 +8,39 @@ on:
 
 env:
   python_version: 3.11
+
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v4
-            - uses: actions/setup-python@v4
-              with:
-                python-version: ${{env.python_version}}
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{env.python_version}}
 
-            - name: unit test
-              run: pytest
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          
+      - name: Run unit tests
+        run: pytest
 
-            - name: Build image
-              run: docker build -t cheick-b/my-portfolio2
+      - name: Build image
+        run: docker build -t cheick-b/my-portfolio2 .
 
-            - name: configure aws credentials
-              uses: aws-actions/configure-aws-credentials@v2
-              with: 
-                role-to-assume: arn:aws:iam::366019841221:role/OIDC-ROLE
-                aws-region: us-east-1
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with: 
+          role-to-assume: arn:aws:iam::366019841221:role/OIDC-ROLE
+          aws-region: us-east-1
 
-            - name: Upload to s3
-              uses: aws-actions/s3-sync@v1
-    
-              with:
-                bucket: my-portfolio3
-                region: us-east-1
-                source-dir: .
-                dest-dir: utc-app/
+      - name: Install AWS CLI
+        run: |
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install --update
+
+      - name: Upload to S3
+        run: |
+          aws s3 sync . s3://my-portfolio3/utc-app/ --exclude ".git/*" --exclude ".github/*"
