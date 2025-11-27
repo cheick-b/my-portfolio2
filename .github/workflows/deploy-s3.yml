@@ -21,7 +21,7 @@ jobs:
               run: pytest
 
             - name: Build image
-              run: docker build -t cheick-b/my-portfolio3
+              run: docker build -t cheick-b/my-portfolio2
 
             - name: configure aws credentials
               uses: aws-actions/configure-aws-credentials@v2
